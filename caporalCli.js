@@ -64,6 +64,84 @@ program
         } catch (err) {
             console.error(`Error reading file ${filePath}:`, err.message);
         }
+    })
+
+    //Get-salles (type de cours + salle)
+    .command('get-slots', 'Get the time when a room is free')
+    .argument('<file>', 'Path to the CRU file')
+    .argument('<roomName>', 'Name of the room')
+    .action(({ args }) => {
+        const filePath = args.file;
+        const roomName = args.roomName;
+  
+        try {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const parser = new CruParser();
+            parser.parse(fileContent);
+  
+            const coursesInThisRoom = parser.courses.filter(c => 
+                c.creneaux.some(creneau => creneau.salle === roomName)
+            );
+            if (!coursesInThisRoom) {
+                console.error(`No course found for the room "${roomName}"`);
+                return;
+            }
+            
+            const freeSlots = {
+                L: [{ start: 8, end: 18 }],
+                MA: [{ start: 8, end: 18 }],
+                ME: [{ start: 8, end: 18 }],
+                J: [{ start: 8, end: 18 }],
+                V: [{ start: 8, end: 18 }]
+            }; 
+
+            function retirerPlage(horaires, jour, retirerStart, retirerEnd){   
+                horaires[jour] = horaires[jour]
+                    .flatMap(({ start, end }) => {
+                        if (retirerEnd <= start || retirerStart >= end) {
+                            
+                            return [{ start, end }];
+                        }
+                        const result = [];
+                    
+                        if (retirerStart > start) {
+                            result.push({ start, end: retirerStart });
+                        }
+                    
+                        if (retirerEnd < end) {
+                            result.push({ start: retirerEnd, end });
+                        }
+                        return result;
+                    });
+            }
+
+            for(const cours of coursesInThisRoom){
+                for(const creneau of cours.creneaux){
+                    const jour = creneau.jour;
+                    const match = creneau.horaire.match(/(\d+):\d{2}-(\d+):\d{2}/);
+                    const retirerStart = parseInt(match[1], 10); 
+                    const retirerEnd = parseInt(match[2], 10);
+                    retirerPlage(freeSlots, jour, retirerStart, retirerEnd);
+                }
+            }
+
+            const codeEnJour = {L: "Lundi", MA: "Mardi", ME: "Mercredi", J: "Jeudi", V: "Vendredi"};
+            const listeCodes = ["L","MA","ME","J","V"];
+
+            if (coursesInThisRoom.length > 0) {
+                //console.log(JSON.stringify(freeSlots, null, 2));
+                for (let i = 0; i < 5; i++){
+                    const creneaux = freeSlots[listeCodes[i]];
+                    for(const creneau of creneaux){
+                        console.log(`Le ${codeEnJour[listeCodes[i]]}, il y a un créneau de ${creneau.start} à ${creneau.end}`);
+                    }
+                }
+            } else {
+                console.log(`No slot found for room "${roomName}".`);
+            }
+        } catch (err) {
+            console.error(`Error reading file ${filePath}:`, err.message);
+        }
     });
     
 

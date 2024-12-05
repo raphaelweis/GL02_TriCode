@@ -70,16 +70,22 @@ program
 
     //Get-slots
     .command('get-slots', 'Get the time when a room is free')
-    .argument('<file>', 'Path to the CRU file')
     .argument('<roomName>', 'Name of the room')
     .action(({ args }) => {
-        const filePath = args.file;
+        const folders = ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"];
+        let concatenatedContent = '';
+        
         const roomName = args.roomName;
   
         try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            folders.forEach(folder => {
+            
+                const filePath = path.join("SujetA_data", path.join(folder, 'edt.cru'));
+                const fileContent = fs.readFileSync(filePath, 'utf-8');
+                concatenatedContent += fileContent + '\n';
+            });
             const parser = new CruParser();
-            parser.parse(fileContent);
+            parser.parse(concatenatedContent);
   
             const coursesInThisRoom = parser.courses.filter(c => 
                 c.creneaux.some(creneau => creneau.salle === roomName)
@@ -134,8 +140,9 @@ program
                 for (let i = 0; i < 5; i++){
                     const creneaux = freeSlots[listeCodes[i]];
                     if(creneaux.length > 0){
+                        console.log(`Les créneaux disponibles le ${codeEnJour[listeCodes[i]]} sont:`);
                         for(const creneau of creneaux){
-                            console.log(`Le ${codeEnJour[listeCodes[i]]}, il y a un créneau de ${creneau.start}h à ${creneau.end}h.`);
+                            console.log(`       -> de ${creneau.start}h à ${creneau.end}h.`);
                         }
                     }else{
                         console.log(`Il n'y a pas de créneau le ${codeEnJour[listeCodes[i]]}.`);
@@ -146,26 +153,33 @@ program
                 console.log(`No slot found for room "${roomName}". Please verify the room name and try again.`);
             }
         } catch (err) {
-            console.error(`Error reading file ${filePath}:`, err.message);
+            console.error(`Error reading filepath:`, err.message);
         }
     })
 
     //Get-calendar
     .command('get-calendar', 'Get the calendar associated to a student and his courses between two dates.')
-    .argument('<file>', 'Path to the CRU file')
     .argument('<startDateEntered>', 'Date that is at the beginning of the calendar')
     .argument('<endDateEntered>', 'Date that is at the end of the calendar')
     .argument("[userCoursesName...]", 'Courses of the student.')
     .action(({ args }) => {
-        const filePath = args.file;
         const startDateEntered = args.startDateEntered;
         const endDateEntered = args.endDateEntered;
         const userCoursesName = args.userCoursesName;
+
+        const folders = ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"];
+
+        let concatenatedContent = '';
   
         try {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            folders.forEach(folder => {
+            
+                const filePath = path.join("SujetA_data", path.join(folder, 'edt.cru'));
+                const fileContent = fs.readFileSync(filePath, 'utf-8');
+                concatenatedContent += fileContent + '\n';
+            });
             const parser = new CruParser();
-            parser.parse(fileContent);
+            parser.parse(concatenatedContent);
   
             if (!userCoursesName || userCoursesName.length === 0){
                 console.log("Aucun cours fourni. Veuillez entrer au moins un cours.");
@@ -245,7 +259,7 @@ program
             fs.writeFileSync(icsFilePath, icsContent.join("\r\n"), "utf-8");
 
         } catch (err) {
-            console.error(`Error reading file ${filePath}:`, err.message);
+            console.error(`Error reading filepath:`, err.message);
         }
     });
     

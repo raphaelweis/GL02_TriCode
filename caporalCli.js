@@ -64,7 +64,38 @@ program
         } catch (err) {
             console.error(`Error reading file ${filePath}:`, err.message);
         }
-    });
+    })
+
+.command('get-capacity')
+.argument('<file>', 'Path to the CRU file')
+.argument('<room>', 'classroom name')
+.action(({ args }) => {
+    const filePath = args.file;
+    const roomName = args.room;
+
+    try {
+        const fileContent = fs.readFileSync(filePath, 'utf-8');
+        const parser = new CruParser(false);
+        parser.parse(fileContent);
+
+        const capacities = parser.courses.flatMap(course =>
+            course.creneaux
+                .filter(creneau => creneau.salle === roomName)
+                .map(creneau => creneau.nbPlaces)
+        );
+
+        if (capacities.length > 0) {
+            const maxCapacity = Math.max(...capacities);
+            console.log(`Capacity for classroom ${roomName}: ${maxCapacity} places.`);
+        } else {
+            console.log(`No data found for room ${roomName}.`);
+        }
+    } catch (err) {
+        console.error(`Error reading file ${filePath}:`, err.message);
+    }
+});
+
+
     
 
 

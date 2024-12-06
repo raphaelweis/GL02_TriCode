@@ -14,6 +14,10 @@ program
         const filePath = args.file;
         const showErrors = options['show-errors'];
 
+        if (!isValidCruFile(filePath)) {
+            console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+            return;
+        }
         
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -29,13 +33,18 @@ program
     })
 
 
-    //EF0 : get-salles (type de cours + salle)
+    //EF0 : get-classroom (type de cours + salle)
     .command('get-classroom', 'Get classroom and types of sessions for a course')
     .argument('<file>', 'Path to the CRU file')
     .argument('<courseName>', 'Name of the course')
     .action(({ args }) => {
         const filePath = args.file;
         const courseName = args.courseName;
+
+        if (!isValidCruFile(filePath)) {
+            console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+            return;
+        }
   
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -200,6 +209,11 @@ program
         const filePath = args.file;
         const targetDay = args.day.toUpperCase(); 
         const targetHour = args.hour;
+
+        if (!isValidCruFile(filePath)) {
+            console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+            return;
+        }
     
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -250,6 +264,11 @@ program
     .argument('<file>', 'Path to the CRU file')
     .action(({ args }) => {
         const filePath = args.file;
+
+        if (!isValidCruFile(filePath)) {
+            console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+            return;
+        }
 
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
@@ -440,6 +459,11 @@ program
     .action(async ({ args }) => {
         const filePath = args.file;
 
+        if (!isValidCruFile(filePath)) {
+            console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+            return;
+        }
+
         try {
             const fileContent = fs.readFileSync(filePath, 'utf-8');
             const parser = new CruParser();
@@ -519,6 +543,10 @@ program
     });
 
     
-
+    function isValidCruFile(filePath) {
+        const extension = path.extname(filePath).toLowerCase();
+        return extension === '.cru';
+    }
+    
 
 program.run();

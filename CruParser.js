@@ -7,6 +7,7 @@ const CruParser = function(showErrors = true) {
     this.currentCourse = null;
 };
 
+
 // Découpage des données en lignes
 CruParser.prototype.tokenize = function(data) {
     return data.split(/\r?\n/).filter(line => line.trim());
@@ -14,10 +15,16 @@ CruParser.prototype.tokenize = function(data) {
 
 // Fonction principale de parsing
 CruParser.prototype.parse = function(data) {
-    const tokens = this.tokenize(data);
+    // Filtrer les données pertinentes
+    const filteredData = this.filterRelevantData(data);
+
+    // Tokeniser les données filtrées
+    const tokens = this.tokenize(filteredData.join('\n'));
+
     while (tokens.length > 0) {
         this.course(tokens);
     }
+
     return this.courses;
 };
 
@@ -50,9 +57,20 @@ CruParser.prototype.course = function(input) {
     }
 };
 
-// Analyse du nom du cours
+CruParser.prototype.filterRelevantData = function(data) {
+    const lines = data.split(/\r?\n/);
+
+    return lines.filter(line => {
+        return (
+            line.startsWith('+') || // Noms de cours
+            line.match(/^1,[A-Z0-9]+,P=\d+,H=[A-Z]+ \d{1,2}:\d{2}-\d{1,2}:\d{2},F[A-Z0-9]+,S=[A-Z0-9]{4}\/\//) // Créneaux valides
+        );
+    });
+};
+
 CruParser.prototype.name = function(line) {
-    if (!line.match(/^\+[A-Z0-9]{4}$/)) {
+    // Accepter les noms de cours élargis
+    if (!line.match(/^\+[A-Z0-9]+$/)) { // Autoriser les noms avec des lettres et des chiffres variés
         this.errMsg('Invalid course name format', line);
         return;
     }
@@ -64,7 +82,6 @@ CruParser.prototype.name = function(line) {
 CruParser.prototype.creneau = function(input) {
     const line = this.next(input);
 
-    // Correction du regex et décomposition correcte
     const match = line.match(/^1,([A-Z0-9]+),P=(\d+),H=([A-Z]+)\s(\d{1,2}:\d{2}-\d{1,2}:\d{2}),F([A-Z0-9]+),S=([A-Z0-9]{4})\/\//);
 
     if (!match) {
@@ -72,10 +89,8 @@ CruParser.prototype.creneau = function(input) {
         return;
     }
 
-    // Décomposition correcte des éléments.
     const [_, type, nbPlaces, jour, horaire, sousGroupe, salle] = match;
 
-    // Appel avec les bonnes valeurs.
     this.addCreneau(type, parseInt(nbPlaces, 10), jour, horaire, sousGroupe, salle);
 };
 
@@ -86,7 +101,6 @@ CruParser.prototype.addCreneau = function(type, nbPlaces, jour, horaire, sousGro
         return;
     }
 
-    // Vérification d'unicité : même jour, même horaire et même salle.
     const isDuplicate = this.currentCourse.creneaux.some(creneau =>
         creneau.jour === jour && creneau.horaire === horaire && creneau.salle === salle
     );
@@ -99,13 +113,9 @@ CruParser.prototype.addCreneau = function(type, nbPlaces, jour, horaire, sousGro
     this.currentCourse.addCreneau(type, nbPlaces, jour, horaire, sousGroupe, salle);
 };
 
-
 // Affichage du résumé des erreurs
 CruParser.prototype.printSummary = function() {
     console.log(`Parsing completed with ${this.errorCount} error(s).`);
 };
-
-
-
 
 module.exports = CruParser;

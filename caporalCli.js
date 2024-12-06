@@ -103,8 +103,9 @@ program
                 V: [{ start: 8, end: 18 }]
             }; 
 
-            function retirerPlage(horaires, jour, retirerStart, retirerEnd){   
-                horaires[jour] = horaires[jour]
+            function retirerPlage(horaires, jour, retirerStart, retirerEnd){ 
+                if(horaires[jour]){
+                    horaires[jour] = horaires[jour]
                     .flatMap(({ start, end }) => {
                         if (retirerEnd <= start || retirerStart >= end) {
                             
@@ -121,6 +122,7 @@ program
                         }
                         return result;
                     });
+                } 
             }
 
             for(const cours of coursesInThisRoom){
@@ -152,6 +154,9 @@ program
             } else {
                 console.log(`No slot found for room "${roomName}". Please verify the room name and try again.`);
             }
+
+            
+
         } catch (err) {
             console.error(`Error reading filepath:`, err.message);
         }

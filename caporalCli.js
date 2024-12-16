@@ -413,6 +413,7 @@ program
 
       if (!userCoursesName || userCoursesName.length === 0) {
         console.log("Aucun cours fourni. Veuillez entrer au moins un cours.");
+        return;
       }
 
       const userCourses = parser.courses.filter((course) =>

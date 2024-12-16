@@ -39,7 +39,7 @@ node ./caporalCli.js get-slots B101
 **Obtenir les salles disponibles pour un créneau donné** : Cette commande permet de lister les salles disponibles sur un créneau donné pour la semaine actuelle.
 
 ```bash
-node ./caporalCli.js get-free-classrooms sample.cru
+node ./caporalCli.js get-free-classrooms sample.cru J 12:00
 ```
 
 ### EF4

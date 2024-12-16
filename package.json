@@ -19,5 +19,8 @@
   "overrides": {
     "ajv": "^8.17.1",
     "whatwg-url": "^14.0.0"
+  },
+  "devDependencies": {
+    "prettier": "3.4.2"
   }
 }

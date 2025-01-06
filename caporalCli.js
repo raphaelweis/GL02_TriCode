@@ -382,7 +382,11 @@ program
   )
   .argument("<endDateEntered>", "Date that is at the end of the calendar")
   .argument("[userCoursesName...]", "Courses of the student.")
-  .action(({ args }) => {
+  .option(
+    "--output-path <output-path>",
+    "The path to use when generating the ICS file",
+  )
+  .action(({ args, options }) => {
     const startDateEntered = args.startDateEntered;
     const endDateEntered = args.endDateEntered;
     const userCoursesName = args.userCoursesName;
@@ -450,8 +454,6 @@ program
       const codeEnType = { C1: "CM", D1: "TD", T1: "TP" };
 
       while (currentDate <= endDate) {
-        //console.log(currentDate.toISOString().split("T")[0]);
-
         userCourses.forEach((course, index) => {
           course.creneaux.forEach((creneau, index2) => {
             if (codeEnNumJour[creneau.jour] === currentDate.getDay()) {
@@ -502,10 +504,9 @@ program
 
       icsContent.push("END:VCALENDAR");
 
-      const icsFilePath = path.join(
-        path.join(os.homedir(), "Downloads"),
-        "emploi_du_temps.ics",
-      );
+      const icsFilePath = options.outputPath
+        ? options.outputPath
+        : path.join(__dirname, "emploi_du_temps.ics");
       fs.writeFileSync(icsFilePath, icsContent.join("\r\n"), "utf-8");
     } catch (err) {
       console.error(`Error reading filepath:`, err.message);

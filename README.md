@@ -1,69 +1,49 @@
 # GL02_TriCode
 
-## 🛠 Installation
+This is the TriCode project conducted for the GLO2 class during the 2024 Autumn semester.
 
-Avant de pouvoir utiliser l'application, vous devez installer les dépendances nécessaires. Exécutez la commande suivante dans votre terminal :
+## About this project
+
+This project was commandited by the Sealand Republic Central University to the GL02 TriCode team. The goal is to provide a tool that can ease the management of teaching rooms occupancy. It contains several features related to room occupancy and class schedules. All features depend on data provided in CRU files that define weekly courses timeslots for all the available rooms.
+
+## About the authors
+
+The specification for this project was written by the Orapi team, composed of three members:
+
+- **Raphaël WEIS**
+- **Corentin BRANCHUT**
+- **Hugo ROBIC**
+
+The specification has then been implemented by the TriCode team, composed of three members:
+
+- **Ange KAMGUE MAGNE**
+- **Silar CAPAR**
+- **Nicolas RANVOISY**
+
+The v1 for the project has been handed over on december 6, 2024. All maintaining work going forward will be done by the Orapi team.
+
+## Installation
+
+After cloning this repository, ensure you have a valid node version (version 20 and up) and install the necessary dependencies:
 
 ```bash
 npm install
 ```
 
-## 🔧 Fonctionnalités
-
-### EF0
-
-**Obtenir les salles et leurs types de cours pour un cours donné** : Utilisez la commande suivante pour obtenir les salles avec leur type de cours associé :
+You can then access the main program by running:
 
 ```bash
-node ./caporalCli.js get-classroom ./sample.cru +AP03
+node ./caporalCli.js
 ```
 
-### EF1
-
-**Obtenir la capacité d'une salle** : Vous pouvez récupérer la capacité d'une salle en précisant le fichier `.cru` et le nom de la salle avec la commande suivante :
+There is documentation directly included in the script, access it with:
 
 ```bash
-node ./caporalCli.js get-capacity ./sample.cru B103
+node ./caporalCli.js --help
 ```
 
-### EF2
+More detailed instructions about using and developing this program can be found in this repository's Wiki.
 
-**Obtenir les créneaux disponibles pour une salle donnée** : Affichez les créneaux disponibles pour une salle sur la semaine actuelle avec cette commande :
+## LICENSE
 
-```bash
-node ./caporalCli.js get-slots B101
-```
-
-### EF3
-
-**Obtenir les salles disponibles pour un créneau donné** : Cette commande permet de lister les salles disponibles sur un créneau donné pour la semaine actuelle.
-
-```bash
-node ./caporalCli.js get-free-classrooms sample.cru J 12:00
-```
-
-### EF4
-
-**Générer un fichier ICS pour une période donnée** : Cette fonctionnalité permet de générer un fichier ICS (au format RFC 5545) contenant tous les enseignements auxquels vous participez pendant une période définie. Utilisez la commande suivante :
-
-```bash
-node ./caporalCli.js get-calendar 2024-12-06 2024-12-20 +NF16 +GL02 +PO03
-```
-
-Le fichier sera sauvegardé dans le dossier `Downloads`.
-
-### EF5
-
-**Visualiser le taux d'occupation des salles** : Vous pouvez générer une visualisation graphique du taux d'occupation des salles ainsi qu'un classement basé sur leur capacité. Pour cela, utilisez cette commande :
-
-```bash
-node ./caporalCli.js generate-occupancy sample.cru
-```
-
-### EF6
-
-**Générer un classement des salles par capacité d'accueil** : Cette commande produit un tableau classant les salles selon leur capacité d'accueil, accompagné d'un graphique. Exemple :
-
-```bash
-node ./caporalCli.js rank-classrooms sample.cru
-```
+This project is fully open-source, and is licensed under the MIT License. You are free to use, copy, modify, merge, publish, distribute, sublicense and/or sell copies of this software. For more information, check the [LICENSE](/LICENSE) file.

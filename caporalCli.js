@@ -4,6 +4,27 @@ const path = require("path");
 const os = require("os");
 const CruParser = require("./CruParser");
 
+const DATA_DIR_BASE_PATH = path.resolve(__dirname, "SujetA_data");
+
+// Gets all cru files in the given directory
+const getCruFiles = (dir) => {
+  const files = fs.readdirSync(dir);
+  let cruFiles = [];
+
+  files.forEach((file) => {
+    const filePath = path.join(dir, file);
+    const stat = fs.statSync(filePath);
+
+    if (stat.isDirectory()) {
+      cruFiles = cruFiles.concat(getCruFiles(filePath));
+    } else if (file.endsWith(".cru")) {
+      cruFiles.push(filePath);
+    }
+  });
+
+  return cruFiles;
+};
+
 program
   //Check Cru
   .command("check", "Check the syntax of a CRU file and display parsed data")
@@ -223,62 +244,64 @@ program
     "get-free-classrooms",
     "Get free classrooms for a specific slot in the week",
   )
-  .argument("<file>", "Path to the CRU file")
   .argument("<day>", "Day of the week ( L, MA, ME)")
   .argument("<hour>", "Hour of the slot ( 10:00)")
   .action(({ args }) => {
-    const filePath = args.file;
     const targetDay = args.day.toUpperCase();
     const targetHour = args.hour;
+    const cruFiles = getCruFiles(DATA_DIR_BASE_PATH);
 
-    if (!isValidCruFile(filePath)) {
-      console.error(`Error: The file "${filePath}" is not a valid .cru file.`);
+    if (cruFiles.length === 0) {
+      console.error("No .cru files found in the directory.");
       return;
     }
 
-    try {
-      const fileContent = fs.readFileSync(filePath, "utf-8");
-      const parser = new CruParser();
-      parser.parse(fileContent);
+    const allCreneaux = [];
+    const allRoomsSet = new Set();
 
-      // Collecter les créneaux et extraire une liste de salles
-      const allCreneaux = [];
-      const allRoomsSet = new Set();
-      parser.courses.forEach((course) => {
-        course.creneaux.forEach((creneau) => {
-          allCreneaux.push({
-            jour: creneau.jour.toUpperCase(),
-            horaire: creneau.horaire,
-            salle: creneau.salle,
+    cruFiles.forEach((filePath) => {
+      try {
+        const fileContent = fs.readFileSync(filePath, "utf-8");
+        const parser = new CruParser();
+        parser.parse(fileContent);
+
+        // Collecter les créneaux et extraire une liste de salles
+        parser.courses.forEach((course) => {
+          course.creneaux.forEach((creneau) => {
+            allCreneaux.push({
+              jour: creneau.jour.toUpperCase(),
+              horaire: creneau.horaire,
+              salle: creneau.salle,
+            });
+            allRoomsSet.add(creneau.salle);
           });
-          allRoomsSet.add(creneau.salle);
         });
-      });
-
-      // Convertir en tableau
-      const allRooms = Array.from(allRoomsSet);
-
-      // Les salles occupées
-      const occupiedRooms = allCreneaux
-        .filter(
-          (creneau) =>
-            creneau.jour === targetDay && creneau.horaire.includes(targetHour),
-        )
-        .map((creneau) => creneau.salle);
-
-      const freeRooms = allRooms.filter(
-        (room) => !occupiedRooms.includes(room),
-      );
-
-      //Affichage des salles vides
-      if (freeRooms.length > 0) {
-        console.log(`Free classrooms on ${targetDay} at ${targetHour}:`);
-        freeRooms.forEach((room) => console.log(`- ${room}`));
-      } else {
-        console.log(`No free classrooms on ${targetDay} at ${targetHour}.`);
+      } catch (err) {
+        console.error(`Error parsing file ${filePath}:`, err.message);
       }
-    } catch (err) {
-      console.error(`Error reading file ${filePath}:`, err.message);
+    });
+      
+    // Convertir en tableau
+    const allRooms = Array.from(allRoomsSet);
+
+    // Les salles occupées
+    const occupiedRooms = allCreneaux
+      .filter(
+        (creneau) =>
+          creneau.jour === targetDay && creneau.horaire.includes(targetHour),
+      )
+      .map((creneau) => creneau.salle);
+
+    const freeRooms = allRooms.filter(
+      (room) => !occupiedRooms.includes(room),
+    );
+
+    //Affichage des salles vides
+    if (freeRooms.length > 0) {
+      console.log(`Free classrooms on ${targetDay} at ${targetHour}:`);
+      freeRooms.forEach((room) => console.log(`- ${room}`));
+    } else {
+      console.log(`No free classrooms on ${targetDay} at ${targetHour}.`);
     }
   })
 

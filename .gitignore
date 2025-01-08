@@ -2,3 +2,6 @@
 .idea
 
 node_modules/
+
+# Default generated ics calendar.
+emploi_du_temps.ics

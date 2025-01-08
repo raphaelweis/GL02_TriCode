@@ -247,6 +247,7 @@ program
   .argument("<day>", "Day of the week ( L, MA, ME)")
   .argument("<hour>", "Hour of the slot ( 10:00)")
   .action(({ args }) => {
+
     const targetDay = args.day.toUpperCase();
     const targetHour = args.hour;
     const cruFiles = getCruFiles(DATA_DIR_BASE_PATH);
@@ -394,7 +395,7 @@ program
     }
   })
 
-  //Get-calendar
+  // EF4: Get-calendar
   .command(
     "get-calendar",
     "Get the calendar associated to a student and his courses between two dates.",
@@ -413,6 +414,38 @@ program
     const startDateEntered = args.startDateEntered;
     const endDateEntered = args.endDateEntered;
     const userCoursesName = args.userCoursesName;
+
+    // Verifications on given dates
+    const start = new Date(startDateEntered);
+    const end = new Date(endDateEntered);
+
+    // Valid date syntax
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(startDateEntered) || !dateRegex.test(endDateEntered)) {
+     console.log("Error: Start date AND end date must be given as: YYYY-MM-DD.");
+     return;
+    }
+
+    // Valid date semantics
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.log("Error: One of the given dates is invalid.");
+      return;
+    }
+
+    // Start date prior to end date
+    if (start > end) {
+      console.log("Error: The start date must be prior to the end date.");
+      return;
+    }
+
+    // Dates given between fixed limits
+    const minDate = new Date("2024-01-01");
+    const maxDate = new Date("2025-12-31");
+
+    if (start < minDate || end > maxDate) {
+      console.log("Error: Dates must be given between 2024-01-01 and 2025-12-31.");
+      return;
+    }
 
     const folders = [
       "AB",

@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const CruParser = require("./CruParser");
+const { time } = require("console");
 
 const DATA_DIR_BASE_PATH = path.resolve(__dirname, "SujetA_data");
 
@@ -246,11 +247,35 @@ program
   )
   .argument("<day>", "Day of the week ( L, MA, ME)")
   .argument("<hour>", "Hour of the slot ( 10:00)")
-  .action(({ args }) => {
+  .option("--file <file>", "Specify the file, or let by default")
+  .action(({ args, options }) => {
 
     const targetDay = args.day.toUpperCase();
     const targetHour = args.hour;
-    const cruFiles = getCruFiles(DATA_DIR_BASE_PATH);
+
+   //petit changement, ajout d'une option pour pouvoir choisir un fichier spécific lors de l'execution de la commande 
+    const filePath = options.file || DATA_DIR_BASE_PATH;
+
+    const validDays = new Set(["L","M","ME","J","V"]);
+    if(!validDays.has(targetDay)){
+      console.error('Day is invalid "${targetDay}"');
+      return; 
+    }
+
+    const validHour = /^(\d{1,2}):(\d{2})$/;
+    const verifyMatch = targetHour.match(validHour); 
+    if(!verifyMatch) {
+      console.error('Hour is invalid "{targetHour}"');
+      return;
+    }
+
+    const h = parseInt(verifyMatch[1], 10);
+    const m =parseInt (verifyMatch[2], 10);
+    if(h<0 || h>23 || m<0 || m>59) {
+      console.error('Invalid, "{targetHour}" must be in range of 00:00 to 23:59');
+      return;
+    }
+    const cruFiles = fs.statSync(filePath).isDirectory()  ? getCruFiles(DATA_DIR_BASE_PATH) : [filePath];
 
     if (cruFiles.length === 0) {
       console.error("No .cru files found in the directory.");
@@ -281,7 +306,23 @@ program
         console.error(`Error parsing file ${filePath}:`, err.message);
       }
     });
-      
+    // Ajout d'une fonction pour rendre plus flexible la detection des créneaux libres, [premier essai de résolution de l'issue EF3] 
+    function isTimeInInterval(targetTime, range) {
+
+      const [start, end] = range.split("-").map((time) => time.trim());
+
+      const toMinutes = (hhmm) => {
+        const [h, m] = hhmm.split(":").map(Number);
+        return h * 60 + m;
+      };
+    
+      const startM = toMinutes(start);
+      const endM = toMinutes(end);
+      const targetM = toMinutes(targetTime);
+
+      return targetM >= startM && targetM < endM;
+    }
+
     // Convertir en tableau
     const allRooms = Array.from(allRoomsSet);
 
@@ -289,7 +330,7 @@ program
     const occupiedRooms = allCreneaux
       .filter(
         (creneau) =>
-          creneau.jour === targetDay && creneau.horaire.includes(targetHour),
+          creneau.jour === targetDay && isTimeInInterval(targetHour, creneau.horaire),
       )
       .map((creneau) => creneau.salle);
 

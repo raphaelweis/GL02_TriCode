@@ -256,6 +256,25 @@ program
    //petit changement, ajout d'une option pour pouvoir choisir un fichier spécific lors de l'execution de la commande 
     const filePath = options.file || DATA_DIR_BASE_PATH;
 
+    const validDays = new Set(["L","M","ME","J","V"]);
+    if(!validDays.has(targetDay)){
+      console.error('Day is invalid "${targetDay}"');
+      return; 
+    }
+
+    const validHour = /^(\d{1,2}):(\d{2})$/;
+    const verifyMatch = targetHour.match(validHour); 
+    if(!verifyMatch) {
+      console.error('Hour is invalid "{targetHour}"');
+      return;
+    }
+
+    const h = parseInt(verifyMatch[1], 10);
+    const m =parseInt (verifyMatch[2], 10);
+    if(h<0 || h>23 || m<0 || m>59) {
+      console.error('Invalid, "{targetHour}" must be in range of 00:00 to 23:59');
+      return;
+    }
     const cruFiles = fs.statSync(filePath).isDirectory()  ? getCruFiles(DATA_DIR_BASE_PATH) : [filePath];
 
     if (cruFiles.length === 0) {
